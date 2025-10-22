@@ -96,7 +96,7 @@ dist/
 
 # Gatsby
 .cache/
-public/
+# public/  # コメントアウト: WebAuthn実装ファイルをバージョン管理に含める
 
 # vuepress
 .vuepress/dist/
