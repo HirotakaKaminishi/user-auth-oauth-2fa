@@ -1,0 +1,45 @@
+name: Docker Compose Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        run: |
+          cp .env.docker .env
+          sed -i 's/your_secure_db_password_here/${{ secrets.DB_PASSWORD }}/g' .env
+          sed -i 's/your_secure_redis_password_here/${{ secrets.REDIS_PASSWORD }}/g' .env
+
+      - name: Start services
+        run: docker-compose up -d
+
+      - name: Wait for services
+        run: |
+          timeout 60 sh -c 'until docker-compose exec -T app curl -f http://localhost:3000/health; do sleep 2; done'
+
+      - name: Run database migrations
+        run: docker-compose exec -T postgres psql -U auth_user -d auth_db -c "SELECT version();"
+
+      - name: Run tests
+        run: docker-compose exec -T app npm test
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker-compose logs
+
+      - name: Clean up
+        if: always()
+        run: docker-compose down -v

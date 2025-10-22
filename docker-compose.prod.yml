@@ -1,0 +1,31 @@
+# Production overrides for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+version: '3.9'
+
+services:
+  app:
+    build:
+      target: production  # Use production build stage
+    restart: always
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: warn  # Less verbose logging in production
+    volumes:
+      # Remove hot reload volumes
+      - ./logs:/app/logs:rw
+
+  postgres:
+    restart: always
+    # Use stronger password in production
+    command: postgres -c shared_buffers=256MB -c max_connections=200
+
+  redis:
+    restart: always
+    # Enable persistence
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+  # Disable pgAdmin in production
+  pgadmin:
+    profiles:
+      - disabled
