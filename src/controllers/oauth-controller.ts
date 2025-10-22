@@ -273,7 +273,6 @@ export class OAuthController {
           name: user.name,
           picture: user.picture,
           emailVerified: user.emailVerified,
-          twoFactorEnabled: user.twoFactorEnabled,
         },
       });
     } catch (error) {

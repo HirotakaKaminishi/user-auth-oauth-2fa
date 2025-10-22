@@ -9,7 +9,6 @@ import {
   UserId,
   OAuthUserProfile,
   OAuthConnection,
-  TwoFactorSettings,
   RepositoryError,
 } from '../types/user';
 
@@ -45,15 +44,6 @@ export interface UserRepository {
    * Uses optimistic locking via updated_at timestamp
    */
   update(user: User): Promise<Result<User, RepositoryError>>;
-
-  /**
-   * Update 2FA settings for user
-   * Requirements: 2.1, 2.2, 2.5
-   */
-  update2FASettings(
-    userId: UserId,
-    settings: TwoFactorSettings
-  ): Promise<Result<void, RepositoryError>>;
 
   /**
    * Add OAuth connection to existing user

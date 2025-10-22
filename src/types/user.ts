@@ -22,20 +22,10 @@ export type User = {
   picture?: string;
   createdAt: Date;
   updatedAt: Date;
-  twoFactorEnabled: boolean;
-  twoFactorSecret?: string; // Encrypted
-  recoveryCodes?: string[]; // Hashed
   oauthConnections: OAuthConnection[];
   accountStatus: 'active' | 'locked' | 'suspended';
   failedLoginAttempts: number;
   lockedUntil?: Date;
-};
-
-export type TwoFactorSettings = {
-  enabled: boolean;
-  secret?: string; // Encrypted
-  recoveryCodes?: string[]; // Hashed
-  enrolledAt?: Date;
 };
 
 export type OAuthUserProfile = {

@@ -111,7 +111,7 @@ export class WebAuthnController {
         // ユーザーが存在しない場合は新規作成
         const createResult = await this.userRepository.create(
           userEmail,
-          userEmail.split('@')[0] // メールアドレスのローカル部分を名前として使用
+          userEmail.split('@')[0] || 'User' // メールアドレスのローカル部分を名前として使用
         );
 
         if (!createResult.success) {

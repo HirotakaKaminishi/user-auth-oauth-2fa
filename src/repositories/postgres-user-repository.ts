@@ -17,7 +17,6 @@ import {
   UserId,
   OAuthUserProfile,
   OAuthConnection,
-  TwoFactorSettings,
   RepositoryError,
 } from '../types/user';
 import { logger } from '../config/logger';
@@ -237,9 +236,6 @@ export class PostgresUserRepository implements UserRepository {
         picture: row.picture,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        twoFactorEnabled: row.two_factor_enabled || false,
-        twoFactorSecret: row.two_factor_secret,
-        recoveryCodes: row.recovery_codes,
         oauthConnections,
         accountStatus: row.account_status,
         failedLoginAttempts: row.failed_login_attempts,
@@ -359,100 +355,6 @@ export class PostgresUserRepository implements UserRepository {
         type: 'DATABASE_ERROR',
         cause: new Error('Unknown error'),
       });
-    }
-  }
-
-  /**
-   * Update 2FA settings for user
-   * Requirements: 2.1, 2.2, 2.5 - 2FA enrollment, verification, recovery codes
-   */
-  async update2FASettings(
-    userId: UserId,
-    settings: TwoFactorSettings
-  ): Promise<Result<void, RepositoryError>> {
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-
-      // Check if user exists
-      const userResult = await client.query(
-        `SELECT id FROM users WHERE id = $1`,
-        [userId]
-      );
-
-      if (userResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return Err({
-          type: 'NOT_FOUND',
-          entityId: userId,
-        });
-      }
-
-      // Check if 2FA credentials record exists
-      const existsResult = await client.query(
-        `SELECT user_id FROM two_factor_credentials WHERE user_id = $1`,
-        [userId]
-      );
-
-      if (existsResult.rows.length === 0) {
-        // Insert new 2FA credentials
-        await client.query(
-          `INSERT INTO two_factor_credentials (user_id, enabled, secret_encrypted, recovery_codes_hashed, enrolled_at)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [
-            userId,
-            settings.enabled,
-            settings.secret || null,
-            settings.recoveryCodes || null,
-            settings.enrolledAt || null,
-          ]
-        );
-      } else {
-        // Update existing 2FA credentials
-        await client.query(
-          `UPDATE two_factor_credentials
-           SET
-             enabled = $1,
-             secret_encrypted = $2,
-             recovery_codes_hashed = $3,
-             enrolled_at = $4,
-             version = version + 1
-           WHERE user_id = $5`,
-          [
-            settings.enabled,
-            settings.secret || null,
-            settings.recoveryCodes || null,
-            settings.enrolledAt || null,
-            userId,
-          ]
-        );
-      }
-
-      await client.query('COMMIT');
-
-      logger.info('2FA settings updated', {
-        userId,
-        enabled: settings.enabled,
-      });
-
-      return Ok(undefined);
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Error in update2FASettings', { userId, error });
-
-      if (error instanceof Error) {
-        return Err({
-          type: 'DATABASE_ERROR',
-          cause: error,
-        });
-      }
-
-      return Err({
-        type: 'DATABASE_ERROR',
-        cause: new Error('Unknown error'),
-      });
-    } finally {
-      client.release();
     }
   }
 
