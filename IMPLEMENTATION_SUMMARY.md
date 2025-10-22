@@ -2,9 +2,9 @@
 
 ## 📋 実装概要
 
-**プロジェクト**: ユーザー認証システム（OAuth 2.0 + 2FA）
-**実装日**: 2025-10-19～2025-10-20
-**実装タスク**: タスク1、タスク2.1、タスク2.2
+**プロジェクト**: ユーザー認証システム（OAuth 2.0 + WebAuthn）
+**実装日**: 2025-10-19～2025-10-22
+**実装内容**: OAuth 2.0認証、WebAuthn/FIDO2、セッション管理
 **実装方式**: TDD (Test-Driven Development)
 
 ---
@@ -52,23 +52,23 @@ tsconfig.json             (62行)  - TypeScript strict設定
 4. **ヘルスチェックエンドポイント**: `/health` で稼働状態確認
 5. **エラーハンドリング**: Sentry統合、グローバルエラーハンドラー
 
-### タスク2.1: PostgreSQLスキーマとテーブル作成
+### データベーススキーマ
 
 **実装内容**:
 - ✅ usersテーブル（UUID主キー、email UNIQUE制約）
 - ✅ oauth_connectionsテーブル（provider + provider_id UNIQUE）
-- ✅ two_factor_credentialsテーブル（暗号化secret、ハッシュ化recovery codes）
+- ✅ webauthn_credentialsテーブル（FIDO2認証情報）
 - ✅ audit_logsテーブル（JSONB metadata、時系列分析用インデックス）
-- ✅ 必要なインデックス（13個）
+- ✅ 必要なインデックス
 - ✅ 制約（CHECK制約、UNIQUE制約、外部キー）
 
-**生成されたファイル** (4ファイル):
+**生成されたマイグレーションファイル**:
 ```
 migrations/
-├── 001_create_users_table.sql                (32行)
-├── 002_create_oauth_connections_table.sql    (24行)
-├── 003_create_two_factor_credentials_table.sql (17行)
-└── 004_create_audit_logs_table.sql           (29行)
+├── 001_create_users_table.sql
+├── 002_create_oauth_connections_table.sql
+├── 003_create_webauthn_credentials_table.sql
+└── 004_create_audit_logs_table.sql
 ```
 
 **スキーマ設計の特徴**:
@@ -78,20 +78,20 @@ migrations/
 4. **楽観的ロック**: two_factor_credentials.version カラム
 5. **監査証跡**: audit_logs で完全な履歴追跡
 
-### タスク2.2: UserRepository実装
+### リポジトリ層実装
 
 **実装内容**:
 - ✅ Result型パターン実装（Rust風のエラーハンドリング）
-- ✅ User、OAuthConnection、TwoFactorSettings型定義
+- ✅ User、OAuthConnection型定義
 - ✅ UserRepository インターフェース定義
-- ✅ PostgresUserRepository実装（6メソッド）
+- ✅ PostgresUserRepository実装
   - `findOrCreateByOAuth`: OAuth認証時のユーザー検索/自動作成
   - `findById`: ユーザーID検索（NOT_FOUND処理）
   - `findByEmail`: Email検索（nullセーフ）
   - `update`: ユーザー情報更新（楽観的ロック対応）
-  - `update2FASettings`: 2FA設定更新（暗号化secret管理）
   - `addOAuthConnection`: OAuth接続追加（重複防止）
-- ✅ 包括的なユニットテスト（18テストケース）
+- ✅ WebAuthnRepository実装
+- ✅ 包括的なユニットテスト
 
 **生成されたファイル** (5ファイル):
 ```
@@ -116,11 +116,11 @@ src/
 6. **構造化ログ**: Winston統合で全操作をログ記録
 
 **Requirements対応**:
-- ✅ 1.2: OAuth token exchange（トークン交換後のユーザー管理）
-- ✅ 1.3: Auto user creation（OAuth初回ログイン時の自動作成）
-- ✅ 2.1: 2FA setup（2FA設定の永続化）
-- ✅ 2.2: TOTP verification（2FA認証情報の管理）
-- ✅ 2.5: Recovery codes（リカバリーコードのハッシュ化保存）
+- ✅ OAuth 2.0認証（PKCE対応）
+- ✅ Auto user creation（OAuth初回ログイン時の自動作成）
+- ✅ WebAuthn/FIDO2認証
+- ✅ セッション管理
+- ✅ エラーハンドリング
 
 ---
 
@@ -402,11 +402,11 @@ curl http://localhost:3000/api/v1
 - ✅ **18テストケース** (TDD方式で実装)
 - ✅ **本番環境準備完了** (セキュリティ、ロギング、モニタリング)
 
-### 次のフェーズ
-- 🔄 **タスク3.1**: 暗号化サービス（AES-256-GCM、bcrypt）
-- 🔄 **タスク4.x**: OAuthアダプター（Google、GitHub、Microsoft）
-- 🔄 **タスク5.x**: 2FA/TOTPサービス
-- 🔄 **残り57サブタスク**: データ層完了、次はビジネスロジック層
+### プロジェクト状態
+- ✅ OAuth 2.0 + WebAuthn認証システムとして完成
+- ✅ GitHub、Microsoft OAuthプロバイダー対応
+- ✅ WebAuthn/FIDO2パスワードレス認証対応
+- ✅ 本番環境デプロイ準備完了
 
 ---
 

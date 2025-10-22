@@ -1,16 +1,15 @@
-# User Authentication System (OAuth 2.0 + TOTP 2FA + WebAuthn)
+# User Authentication System (OAuth 2.0 + WebAuthn)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-green.svg)](https://nodejs.org/)
 
-セキュアなユーザー認証システム - OAuth 2.0、TOTP 2要素認証、FIDO2/WebAuthn（パスワードレス認証）を統合した包括的な認証ソリューション。
+セキュアなユーザー認証システム - OAuth 2.0とFIDO2/WebAuthn（パスワードレス認証）を統合した認証ソリューション。
 
 ## ✨ 主要機能
 
-### 🔐 Multi-Factor Authentication
+### 🔐 Authentication Methods
 - **OAuth 2.0**: Google、GitHub、Microsoft プロバイダー対応
-- **TOTP 2FA**: Time-based One-Time Password による2要素認証
 - **WebAuthn/FIDO2**: 生体認証（指紋、顔認証）、セキュリティキー対応
 
 ### 🛡️ セキュリティ
@@ -48,8 +47,8 @@
 
 \`\`\`bash
 # リポジトリのクローン
-git clone https://github.com/YOUR_USERNAME/user-auth-oauth-2fa.git
-cd user-auth-oauth-2fa
+git clone https://github.com/YOUR_USERNAME/user-auth-oauth-webauthn.git
+cd user-auth-oauth-webauthn
 
 # 依存関係のインストール
 npm install
@@ -82,16 +81,11 @@ npm run dev
 ## 📖 ドキュメント
 
 - **[CLAUDE.md](CLAUDE.md)**: cc-sdd（Spec-Driven Development）フレームワークの詳細
-- **[仕様書](.kiro/specs/user-auth-oauth-2fa/)**: 包括的な要件定義、設計書、タスク一覧
+- **[OAUTH-PROVIDERS.md](OAUTH-PROVIDERS.md)**: OAuthプロバイダー設定ガイド
 
 ### cc-sdd (Spec-Driven Development)
 
 このプロジェクトは **cc-sdd（Kiroフレームワーク）** を使用した仕様駆動開発で構築されています。
-
-- **Requirements**: 12の要件定義（89行）
-- **Design**: 包括的な技術設計書（1,762行）
-- **Tasks**: 実装タスク一覧（426行）
-- **整合性**: 100%（仕様と実装の完全一致）
 
 ## 🔒 セキュリティ
 

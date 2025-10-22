@@ -1,9 +1,9 @@
-# 実装レビュー - OAuth 2.0 認証システム
+# 実装レビュー - OAuth 2.0 + WebAuthn 認証システム
 
 ## 📊 実装サマリー
 
-**レビュー日**: 2025-10-21  
-**実装状況**: OAuth 2.0 + PKCE 完了、GitHub OAuth動作確認済み
+**レビュー日**: 2025-10-22
+**実装状況**: OAuth 2.0 + PKCE + WebAuthn/FIDO2 完了、GitHub OAuth動作確認済み
 
 ---
 
@@ -65,8 +65,8 @@ type Result<T, E> =
 | セキュアクッキー | ✅ httpOnly, sameSite | ⭐⭐⭐⭐⭐ |
 | セキュリティヘッダー | ✅ Helmet使用 | ⭐⭐⭐⭐⭐ |
 | レート制限 | ✅ express-rate-limit | ⭐⭐⭐⭐⭐ |
-| AES-256-GCM暗号化 | ✅ TOTP秘密鍵用 | ⭐⭐⭐⭐⭐ |
-| bcrypt (14 rounds) | ✅ リカバリーコード | ⭐⭐⭐⭐⭐ |
+| WebAuthn認証 | ✅ FIDO2対応 | ⭐⭐⭐⭐⭐ |
+| bcrypt | ✅ パスワードハッシュ | ⭐⭐⭐⭐⭐ |
 | セッション管理 | ✅ express-session | ⭐⭐⭐⭐☆ |
 
 ### ⚠️ 改善推奨事項
@@ -312,10 +312,10 @@ ESLint Configured: ✅
 4. デプロイメント準備
 
 ### オプションB: 機能拡張
-1. TOTP 2FA実装（Task 5）
-2. WebAuthn実装
-3. ユーザー管理機能
-4. 監査ログ
+1. Google OAuth追加
+2. 管理画面実装
+3. ユーザー管理機能強化
+4. 監査ログ機能強化
 
 ---
 
