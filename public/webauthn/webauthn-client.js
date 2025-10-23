@@ -64,16 +64,58 @@ function translateErrorMessage(errorMessage) {
 }
 
 /**
+ * ブラウザとOSの検出
+ * @returns {{isIOS: boolean, browser: string}}
+ */
+function detectBrowserAndOS() {
+  const userAgent = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+  let browser = 'unknown';
+  if (/Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor)) {
+    browser = 'chrome';
+  } else if (/Safari/.test(userAgent) && /Apple Computer/.test(navigator.vendor)) {
+    browser = 'safari';
+  } else if (/Firefox/.test(userAgent)) {
+    browser = 'firefox';
+  } else if (/Edg/.test(userAgent)) {
+    browser = 'edge';
+  }
+
+  return { isIOS, browser };
+}
+
+/**
  * WebAuthn API サポートチェック
- * @returns {boolean} WebAuthn APIがサポートされているか
+ * @returns {{supported: boolean, message: string}}
  */
 function isWebAuthnSupported() {
-  return (
+  const { isIOS, browser } = detectBrowserAndOS();
+
+  // iOSでSafari以外のブラウザを使用している場合
+  if (isIOS && browser !== 'safari') {
+    return {
+      supported: false,
+      message: 'iOSでは、WebAuthn/パスキー（Face ID/Touch ID）はSafariのみでサポートされています。Safariブラウザでお試しください。'
+    };
+  }
+
+  // WebAuthn APIの基本的なサポートチェック
+  const basicSupport = (
     window.PublicKeyCredential !== undefined &&
     navigator.credentials !== undefined &&
     typeof navigator.credentials.create === 'function' &&
     typeof navigator.credentials.get === 'function'
   );
+
+  if (!basicSupport) {
+    return {
+      supported: false,
+      message: 'お使いのブラウザはWebAuthn/パスキーをサポートしていません。Chrome、Safari、Edge、Firefoxの最新版をお使いください。'
+    };
+  }
+
+  return { supported: true, message: '' };
 }
 
 // Base64URL encoding/decoding utilities
@@ -112,8 +154,9 @@ function base64URLToBuffer(base64URL) {
 async function registerWebAuthn(userEmail, deviceName) {
   try {
     // WebAuthn APIサポートチェック
-    if (!isWebAuthnSupported()) {
-      throw new Error('お使いのブラウザはWebAuthn/パスキーをサポートしていません。Chrome、Safari、Edge、Firefoxの最新版をお使いください。');
+    const supportCheck = isWebAuthnSupported();
+    if (!supportCheck.supported) {
+      throw new Error(supportCheck.message);
     }
 
     // Step 1: サーバーから登録オプションを取得
@@ -231,8 +274,9 @@ async function registerWebAuthn(userEmail, deviceName) {
 async function authenticateWebAuthnDiscoverable() {
   try {
     // WebAuthn APIサポートチェック
-    if (!isWebAuthnSupported()) {
-      throw new Error('お使いのブラウザはWebAuthn/パスキーをサポートしていません。Chrome、Safari、Edge、Firefoxの最新版をお使いください。');
+    const supportCheck = isWebAuthnSupported();
+    if (!supportCheck.supported) {
+      throw new Error(supportCheck.message);
     }
 
     // Step 1: サーバーから認証オプションを取得（userEmail なし）
@@ -341,8 +385,9 @@ async function authenticateWebAuthnDiscoverable() {
 async function authenticateWebAuthn(userEmail) {
   try {
     // WebAuthn APIサポートチェック
-    if (!isWebAuthnSupported()) {
-      throw new Error('お使いのブラウザはWebAuthn/パスキーをサポートしていません。Chrome、Safari、Edge、Firefoxの最新版をお使いください。');
+    const supportCheck = isWebAuthnSupported();
+    if (!supportCheck.supported) {
+      throw new Error(supportCheck.message);
     }
 
     // Step 1: サーバーから認証オプションを取得
